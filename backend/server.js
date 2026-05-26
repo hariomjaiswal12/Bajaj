@@ -15,8 +15,9 @@ connectDB();
 const app = express();
 
 // Standard Middlewares
+const allowedOrigin = process.env.FRONTEND_URL || '*';
 app.use(cors({
-  origin: '*', // Allow all origins for easier assessment review, can be customized in production
+  origin: allowedOrigin,
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

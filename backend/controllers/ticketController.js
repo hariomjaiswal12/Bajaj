@@ -229,11 +229,19 @@ const getStats = async (req, res, next) => {
       };
     });
 
-    const [statusCounts, breachedCount] = await Promise.all([
+    const [statusCounts, priorityCounts, breachedCount] = await Promise.all([
       Ticket.aggregate([
         {
           $group: {
             _id: '$status',
+            count: { $sum: 1 }
+          }
+        }
+      ]),
+      Ticket.aggregate([
+        {
+          $group: {
+            _id: '$priority',
             count: { $sum: 1 }
           }
         }
@@ -255,8 +263,23 @@ const getStats = async (req, res, next) => {
       }
     });
 
+    // Construct response counts ensures all priorities exist, even if 0 tickets
+    const priorities = {
+      low: 0,
+      medium: 0,
+      high: 0,
+      urgent: 0
+    };
+
+    priorityCounts.forEach(item => {
+      if (priorities[item._id] !== undefined) {
+        priorities[item._id] = item.count;
+      }
+    });
+
     res.json({
       statusCounts: counts,
+      priorityCounts: priorities,
       breachedCount
     });
   } catch (error) {
